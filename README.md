@@ -118,31 +118,3 @@ The manager starts `corruption/StarWarsG.exe` or `GameData/StarWarsG.exe`, with 
 The mod author's instructions determine compatibility and load order. A preset does not merge mod files, automatically resolve dependencies, or isolate savegames/game settings. Mixing unrelated total conversions is generally unsupported. This version manages already installed mods; subscribing and updating remain Steam's responsibility. Workshop launch resolution is handled by the game/Steam.
 
 Launch syntax reference: [The Art of War mod author's Workshop instructions](https://steamcommunity.com/workshop/filedetails/?id=3643661236) demonstrate an ordered submod/base pair. [Local mod installation instructions](https://www.moddb.com/tutorials/installing-and-launching-mods-on-eaw-moddb-and-steam) document `StarWarsG MODPATH=...`.
-
-</details>
-
-## Development
-
-Built with **C#**, **.NET 9**, and **Windows Forms**. Building from source requires Windows and the .NET 9 SDK.
-
-### Build and checks
-
-To build the self-contained release with the .NET 9 SDK, run `./package-release.ps1` in PowerShell. It downloads the official runtime packages when needed, publishes to a fresh staging folder, includes runtime license notices, creates a ZIP, verifies its extracted contents, and runs self-tests and UI smoke checks on the extracted copy. The ZIP and SHA-256 checksum are written to `releases`. Personal settings and test output are excluded. UI smoke checks require an interactive Windows desktop. Intermediate files and check results remain under `releases/build-*` for inspection; distribute only the final ZIP and checksum.
-
-```powershell
-dotnet build -c Release
-dotnet publish -c Release --no-restore -o dist
-& .\dist\EmpireModManager.exe --self-test
-& .\dist\EmpireModManager.exe --scan
-& .\dist\EmpireModManager.exe --smoke-test
-```
-
-The self-test exercises scanning, malformed metadata, preset persistence/backup, argument ordering/spacing, and missing/wrong-edition mod validation using temporary fixtures. It never starts the game. `--scan` writes `scan-report.json` beside the executable using auto-detected folders. `--smoke-test` renders the main window to `ui-preview.png` and exits. In PowerShell, use `Start-Process -Wait -PassThru` when an exit code is needed for this GUI executable.
-
-The game itself must be launched to verify a particular mod combination in play; a valid command alone does not prove that the game loaded every mod.
-
-## Feedback and contributions
-
-Bug reports, usability feedback, and feature suggestions are welcome through this repository's GitHub Issues. For a bug report, include the app version, game edition, steps to reproduce the issue, and any relevant error message or scan details. For launch problems, include the mod names and their preset order.
-
-Ideas that support easier setup, clearer mod organization, and reliable preset handling fit the project's goals.
