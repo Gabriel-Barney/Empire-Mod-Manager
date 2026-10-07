@@ -52,6 +52,6 @@ Upload the four final assets from `releases/`:
 - `EmpireModManager-<version>-source.zip`
 - `EmpireModManager-<version>-source.zip.sha256`
 
-Use a release tag matching the project version, such as `v1.2.3` for the current snapshot. For a new version, update `Version`, `AssemblyVersion`, and `FileVersion` in `EmpireModManager.csproj`, update `RELEASE-NOTES.md` and versioned links in `README.md`, then commit and tag that version.
+Use a release tag matching the project version, such as `v1.2.4` for the current snapshot. For a new version, update `Version`, `AssemblyVersion`, and `FileVersion` in `EmpireModManager.csproj`, update `RELEASE-NOTES.md` and versioned links in `README.md`, then commit and tag that version.
 
 With GitHub Actions enabled, the included `Publish Windows release` workflow builds and tests the application and attaches both packages and their checksums when a matching version tag is pushed. Ordinary pushes to `main` and pull requests run the CI workflow and upload both packages as build artifacts. See [the workflows](.github/workflows) for their exact triggers.

@@ -51,7 +51,7 @@ The release ZIP includes the .NET runtime, so no separate .NET installation is r
 
 ## Quick start
 
-For the release package, extract the entire `EmpireModManager-1.2.3-win-x64.zip` into a writable folder and open `EmpireModManager.exe`. The Windows x64 release includes the .NET runtime. Keep all extracted files together. See [release notes](RELEASE-NOTES.md) for setup and update instructions.
+For the release package, extract the entire `EmpireModManager-1.2.4-win-x64.zip` into a writable folder and open `EmpireModManager.exe`. The Windows x64 release includes the .NET runtime. Keep all extracted files together. See [release notes](RELEASE-NOTES.md) for setup and update instructions.
 
 ### Program updates
 
@@ -61,11 +61,11 @@ Updates download the Windows ZIP and verify its SHA-256 checksum using the match
 
 ### Publishing updates
 
-Run `./package-release.ps1` after increasing the project version. Publish a GitHub release with a matching tag such as `v1.2.3` or `1.2.3` and attach both `EmpireModManager-1.2.3-win-x64.zip` and `EmpireModManager-1.2.3-win-x64.zip.sha256`. Keep publishing the checksum file so existing 1.2.0 and 1.2.1 installations can update. The ZIP must come from the packager, which includes `update-manifest.json` with hashes of application files. The updater accepts assets only from this repository and rejects unverifiable or invalid packages.
+Run `./package-release.ps1` after increasing the project version. Publish a GitHub release with a matching tag such as `v1.2.4` or `1.2.4` and attach both `EmpireModManager-1.2.4-win-x64.zip` and `EmpireModManager-1.2.4-win-x64.zip.sha256`. Keep publishing the checksum file so existing 1.2.0 and 1.2.1 installations can update. The ZIP must come from the packager, which includes `update-manifest.json` with hashes of application files. The updater accepts assets only from this repository and rejects unverifiable or invalid packages.
 
 The `Publish Windows release` workflow builds, tests, and uploads the Windows and source packages with their checksums when a matching version tag is pushed. The existing CI workflow still builds test artifacts for ordinary pushes. Enable GitHub Actions in the repository to use the release workflow. Releasing a new version requires increasing `Version`, `AssemblyVersion`, and `FileVersion` in the project and updating the release notes before tagging.
 
-To verify the updater locally, run `./test-updater.ps1 -Archive releases/EmpireModManager-1.2.3-win-x64.zip`. It uses an isolated test installation to check waiting for app exit, replacing files, restarting, keeping a backup, and preserving saved data. Both GitHub workflows run this check after packaging.
+To verify the updater locally, run `./test-updater.ps1 -Archive releases/EmpireModManager-1.2.4-win-x64.zip`. It uses an isolated test installation to check waiting for app exit, replacing files, restarting, keeping a backup, and preserving saved data. Both GitHub workflows run this check after packaging.
 
 Developer builds in `dist` require the .NET 9 Windows Desktop Runtime.
 

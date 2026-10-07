@@ -129,24 +129,55 @@ internal static class Program
         var toggle = (Button)type.GetField("togglePreview", flags)!.GetValue(form)!;
         var preview = (TextBox)type.GetField("preview", flags)!.GetValue(form)!;
         var order = (ListBox)type.GetField("order", flags)!.GetValue(form)!;
-        var required = (bool)type.GetField("previewRequired", flags)!.GetValue(form)!;
         var originalSize = form.Size;
+        var originalMinimum = form.MinimumSize;
         var wasExpanded = preview.Visible;
+        var state = (AppState)type.GetField("state", flags)!.GetValue(form)!;
+        var originalSettings = state.Settings;
         var setExpanded = type.GetMethod("SetPreviewExpanded", flags)!;
-        form.Size = form.MinimumSize;
-        setExpanded.Invoke(form, [true]);
-        CheckButtonBounds(form);
-        if (!preview.Visible || preview.Height < preview.Font.Height || order.Height < order.ItemHeight)
-            throw new InvalidOperationException("Expanded command must leave both the command and a full load-order entry readable at minimum size.");
-        using var bitmap = new Bitmap(form.Width, form.Height);
-        form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
-        bitmap.Save(Path.Combine(AppContext.BaseDirectory, "command-expanded-preview.png"));
-        toggle.PerformClick();
-        if (preview.Visible != required)
-            throw new InvalidOperationException("The command toggle must collapse valid commands and keep launch errors visible.");
-        form.Size = originalSize;
-        setExpanded.Invoke(form, [wasExpanded]);
-        results.Add("PASS: Command expands at minimum size, preserves readable load order, and keeps launch errors visible.");
+        var updatePreview = type.GetMethod("UpdatePreview", flags)!;
+        var scale = form.DeviceDpi / 96f;
+        var compactSize = new Size((int)(1024 * scale), (int)(718 * scale));
+        try
+        {
+            foreach (var missingGame in new[] { false, true })
+            {
+                state.Settings = missingGame ? new Settings() : originalSettings;
+                updatePreview.Invoke(form, null);
+                var required = (bool)type.GetField("previewRequired", flags)!.GetValue(form)!;
+                foreach (var compact in new[] { false, true })
+                {
+                    // Windows can clamp a window below its requested minimum on
+                    // the 1024x768 desktop used by hosted Windows runners.
+                    form.MinimumSize = compact ? Size.Empty : originalMinimum;
+                    form.Size = compact ? compactSize : originalMinimum;
+                    setExpanded.Invoke(form, [true]);
+                    form.PerformLayout();
+                    CheckButtonBounds(form);
+                    if (!preview.Visible || preview.ClientSize.Height < preview.Font.Height || order.ClientSize.Height < order.ItemHeight)
+                        throw new InvalidOperationException($"Expanded command must leave both the command and a full load-order entry readable: " +
+                            $"window {form.Size}, DPI {form.DeviceDpi}, command height {preview.ClientSize.Height}/{preview.Font.Height}, " +
+                            $"load-order height {order.ClientSize.Height}/{order.ItemHeight}, missing game {missingGame}.");
+                    using var bitmap = new Bitmap(form.Width, form.Height);
+                    form.DrawToBitmap(bitmap, new Rectangle(Point.Empty, form.Size));
+                    var suffix = (compact ? "-compact" : "") + (missingGame ? "-missing-game" : "");
+                    bitmap.Save(Path.Combine(AppContext.BaseDirectory, $"command-expanded{suffix}-preview.png"));
+                    toggle.PerformClick();
+                    if (preview.Visible != required)
+                        throw new InvalidOperationException("The command toggle must collapse valid commands and keep launch errors visible.");
+                    results.Add($"PASS: Expanded command and a full load-order row remain readable at {form.Width}x{form.Height}, " +
+                        $"DPI {form.DeviceDpi}, missing game {missingGame}; launch errors stay visible.");
+                }
+            }
+        }
+        finally
+        {
+            state.Settings = originalSettings;
+            form.MinimumSize = originalMinimum;
+            form.Size = originalSize;
+            updatePreview.Invoke(form, null);
+            setExpanded.Invoke(form, [wasExpanded]);
+        }
     }
 
     static void SelectPreviewMod(Control parent)

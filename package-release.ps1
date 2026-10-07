@@ -52,9 +52,15 @@ try {
         }
     }
     foreach ($check in '--self-test', '--smoke-test') {
+        Write-Host "Running $check..."
         $process = Start-Process -FilePath (Join-Path $verified 'EmpireModManager.exe') -ArgumentList $check -WorkingDirectory $verified -WindowStyle Hidden -PassThru
         if (-not $process.WaitForExit(60000)) { $process.Kill(); throw "$check timed out." }
-        if ($process.ExitCode -ne 0) { throw "$check failed; inspect $verified" }
+        if ($process.ExitCode -ne 0) {
+            $errorLog = Join-Path $verified 'error.log'
+            if (Test-Path -LiteralPath $errorLog) { Write-Host (Get-Content -LiteralPath $errorLog -Raw) }
+            throw "$check failed with exit code $($process.ExitCode); inspect $verified"
+        }
+        Write-Host "$check passed."
     }
     $archive = Join-Path $releaseRoot "$name.zip"
     Move-Item -LiteralPath $candidate -Destination $archive -Force

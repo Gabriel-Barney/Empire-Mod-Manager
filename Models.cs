@@ -46,7 +46,13 @@ public sealed class Settings
     public static Settings Detect()
     {
         var libraries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var steam = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string;
+        string? steam = null;
+        try { steam = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Valve\Steam", "SteamPath", null) as string; }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            // Restricted desktops can deny registry access. Continue with the
+            // conventional library locations and manually configured folders.
+        }
         if (!string.IsNullOrEmpty(steam))
         {
             libraries.Add(steam);

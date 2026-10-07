@@ -36,6 +36,7 @@ public sealed partial class MainForm : Form
     readonly InputSurface commandSurface;
     bool previewExpanded;
     bool previewRequired;
+    bool fittingCommandHeight;
     readonly Label count = new() { Dock = DockStyle.Fill, ForeColor = Muted, TextAlign = ContentAlignment.MiddleLeft };
     readonly Button launch;
     bool updating;
@@ -315,6 +316,8 @@ public sealed partial class MainForm : Form
         }
         presets.Resize += (_, _) => FitListRows();
         order.Resize += (_, _) => FitListRows();
+        order.Resize += (_, _) => FitCommandHeight();
+        configuration.Layout += (_, _) => FitCommandHeight();
         presets.DpiChangedAfterParent += (_, _) => FitListRows();
         order.DpiChangedAfterParent += (_, _) => FitListRows();
         Shown += (_, _) => FitListRows();
@@ -653,6 +656,25 @@ public sealed partial class MainForm : Form
         togglePreview.AccessibleName = previewExpanded ? "Hide launch command" : "Show launch command";
         if (previewRequired) togglePreview.AccessibleName = "Launch details require attention";
         configuration.ResumeLayout(true);
+        FitCommandHeight();
+    }
+    void FitCommandHeight()
+    {
+        if (fittingCommandHeight || !previewExpanded || configuration.ClientSize.Height == 0) return;
+        var rows = configuration.GetRowHeights();
+        if (rows.Length != configuration.RowCount) return;
+        var preferred = (int)Math.Round(58 * DeviceDpi / 96f);
+        var minimum = preview.Font.Height + commandSurface.Padding.Vertical + commandSurface.Margin.Vertical;
+        // Reserve a complete load-order card before assigning space to the
+        // expanded command. Hosted desktops can clamp the form below MinimumSize.
+        var fixedHeight = rows.Where((_, index) => index != 4 && index != 7).Sum();
+        var available = configuration.ClientSize.Height - configuration.Padding.Vertical - fixedHeight
+            - order.Margin.Vertical - order.ItemHeight;
+        var height = Math.Max(minimum, Math.Min(preferred, available));
+        if (Math.Abs(configuration.RowStyles[7].Height - height) < .5f) return;
+        fittingCommandHeight = true;
+        try { configuration.RowStyles[7].Height = height; }
+        finally { fittingCommandHeight = false; }
     }
     void CopyCommand()
     { if (Current is { } p) { Clipboard.SetText(Launcher.Build(state.Settings, p).Preview); status.Text = "Launch command copied."; } }

@@ -1,8 +1,17 @@
-# Empire Mod Manager 1.2.3
+# Empire Mod Manager 1.2.4
 
-Release build — October 3, 2026.
+Release build — October 6, 2026.
 
 Portable Windows x64 package with the .NET runtime included. Extract the entire ZIP into a writable folder and open `EmpireModManager.exe`. Keep all extracted files together. No installer or separate .NET installation is needed.
+
+## Changes in 1.2.4
+
+- Keeps a complete load-order row readable when the expanded launch command is shown on a small desktop, including the 1024-pixel Windows runner display.
+- Checks compact layouts with both configured and missing game folders in the UI smoke test, including visible launch errors.
+- Continues game-folder discovery when Steam's registry entry cannot be read.
+- Prints the underlying application exception when release checks fail and retains diagnostics in the tag-release workflow.
+- Updates GitHub artifact uploads to the Node.js 24 action runtime.
+- Includes a verified source ZIP and checksum alongside application release assets.
 
 ## Changes in 1.2.3
 
