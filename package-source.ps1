@@ -22,8 +22,6 @@ $files = @(
     'package-release.ps1'
     'package-source.ps1'
     'test-updater.ps1'
-    '.gitignore'
-    '.gitattributes'
     'index.html'
     '.github/workflows/ci.yml'
     '.github/workflows/release.yml'
@@ -35,7 +33,9 @@ $files = @(
 $sources = @(Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.cs' -File)
 if ($sources.Count -eq 0) { throw 'No C# source files were found.' }
 $files += $sources.Name
-foreach ($optional in 'global.json', 'LICENSE', 'LICENSE.md', 'LICENSE.txt', 'NOTICE', 'NOTICE.md', 'NOTICE.txt') {
+# Git metadata helps consumers manage a checkout but is not required to build
+# the application. Include it when available, including in partial uploads.
+foreach ($optional in '.gitignore', '.gitattributes', 'global.json', 'LICENSE', 'LICENSE.md', 'LICENSE.txt', 'NOTICE', 'NOTICE.md', 'NOTICE.txt') {
     if (Test-Path -LiteralPath (Join-Path $PSScriptRoot $optional) -PathType Leaf) { $files += $optional }
 }
 $files = @($files | Sort-Object -Unique)
