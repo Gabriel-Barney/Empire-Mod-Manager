@@ -48,3 +48,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'GitHub release publication failed.' }
           gh release edit $env:RELEASE_TAG --draft=false --latest
           if ($LASTEXITCODE -ne 0) { throw 'The release assets were uploaded, but publishing failed. Review the draft release.' }
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-diagnostics
+          path: |
+            releases/build-*/verification/**/*.txt
+            releases/build-*/verification/**/*.log
+            releases/build-*/verification/**/*.png
+            test-results/updater-integration-*/integration-results.txt
+          if-no-files-found: ignore
+          retention-days: 7
