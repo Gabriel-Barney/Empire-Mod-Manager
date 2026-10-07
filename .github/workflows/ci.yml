@@ -1,0 +1,73 @@
+name: Empire Mod Manager CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install .NET 9 SDK
+        id: dotnet
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Select the installed .NET 9 SDK
+        env:
+          SDK_VERSION: ${{ steps.dotnet.outputs.dotnet-version }}
+        run: |
+          dotnet new globaljson --sdk-version $env:SDK_VERSION --roll-forward latestPatch --force
+
+      # Builds the self-contained app, verifies the ZIP, and runs
+      # the project's --self-test and --smoke-test checks.
+      - name: Build, test, and package Windows release
+        run: ./package-release.ps1
+
+      - name: Verify updater installation and restart
+        run: |
+          $archive = Get-ChildItem releases/EmpireModManager-*-win-x64.zip | Select-Object -First 1
+          ./test-updater.ps1 -Archive $archive.FullName
+
+      - name: Package verified source snapshot
+        run: ./package-source.ps1
+
+      - name: Upload application and source packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: EmpireModManager-win-x64
+          path: |
+            releases/EmpireModManager-*-win-x64.zip
+            releases/EmpireModManager-*-win-x64.zip.sha256
+            releases/EmpireModManager-*-source.zip
+            releases/EmpireModManager-*-source.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diagnostics
+          path: |
+            releases/build-*/verification/**/*.txt
+            releases/build-*/verification/**/*.log
+            releases/build-*/verification/**/*.png
+            test-results/updater-integration-*/integration-results.txt
+          if-no-files-found: ignore
+          retention-days: 7
