@@ -1,0 +1,50 @@
+name: Publish Windows release
+
+on:
+  push:
+    tags: ['v*', '[0-9]*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+      - name: Verify the tag matches the application version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          [xml]$project = Get-Content EmpireModManager.csproj
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ($env:RELEASE_TAG -notin @($version, "v$version")) { throw 'The release tag must match the project version.' }
+      - name: Build and verify release package
+        run: ./package-release.ps1
+      - name: Verify updater installation and restart
+        run: |
+          $archive = Get-ChildItem releases/EmpireModManager-*-win-x64.zip | Select-Object -First 1
+          ./test-updater.ps1 -Archive $archive.FullName
+      - name: Package verified source snapshot
+        run: ./package-source.ps1
+      - name: Publish application, source, and checksums together
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          [xml]$project = Get-Content EmpireModManager.csproj
+          $version = [string]$project.Project.PropertyGroup.Version
+          $archive = "releases/EmpireModManager-$version-win-x64.zip"
+          $sourceArchive = "releases/EmpireModManager-$version-source.zip"
+          gh release create $env:RELEASE_TAG $archive "$archive.sha256" $sourceArchive "$sourceArchive.sha256" --draft --verify-tag --title "Empire Mod Manager $version" --notes-file RELEASE-NOTES.md
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub release publication failed.' }
+          gh release edit $env:RELEASE_TAG --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'The release assets were uploaded, but publishing failed. Review the draft release.' }

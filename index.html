@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Empire Mod Manager: a portable Windows mod and preset manager for Star Wars: Empire at War and Forces of Corruption.">
+  <meta name="theme-color" content="#101214">
+  <title>Empire Mod Manager — Your mods. Your campaign.</title>
+  <link rel="icon" href="assets/empire-mod-manager.ico">
+  <style>
+    :root { color-scheme: dark; --bg:#101214; --panel:#191c20; --line:#32363c; --text:#f3f1ec; --muted:#b4b6bb; --accent:#f2bc61; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:24px; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.7 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:var(--accent); text-underline-offset:4px; }
+    a:hover { color:#ffe0aa; }
+    a:focus-visible,summary:focus-visible { outline:3px solid var(--accent); outline-offset:6px; }
+    .wrap { width:min(1120px,calc(100% - 48px)); margin:auto; }
+    .skip { position:absolute; left:20px; top:-100px; padding:12px; background:var(--panel); z-index:5; }
+    .skip:focus { top:12px; }
+    header { border-bottom:1px solid var(--line); }
+    .nav { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:22px 0; }
+    .brand { display:flex; align-items:center; gap:12px; color:var(--text); text-decoration:none; font-size:15px; font-weight:750; letter-spacing:.02em; }
+    .brand img { width:38px; height:38px; object-fit:contain; }
+    nav { display:flex; flex-wrap:wrap; gap:24px; }
+    nav a { font-size:14px; text-decoration:none; color:var(--muted); }
+    .eyebrow { color:var(--accent); font:700 12px/1.5 ui-monospace,Consolas,monospace; letter-spacing:.14em; text-transform:uppercase; }
+    .hero { padding:92px 0 72px; display:grid; grid-template-columns:1.1fr 1fr; gap:64px; align-items:center; }
+    h1 { font-size:clamp(44px,5.7vw,72px); line-height:1.06; letter-spacing:-.055em; margin:20px 0 24px; font-weight:750; }
+    h1 span { color:var(--accent); }
+    .lead { color:var(--muted); font-size:18px; max-width:540px; }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:30px; }
+    .button { display:inline-flex; align-items:center; justify-content:center; padding:12px 20px; border:1px solid var(--line); border-radius:6px; text-decoration:none; color:var(--text); font-size:14px; font-weight:700; }
+    .button.primary { color:#19140b; background:var(--accent); border-color:var(--accent); }
+    .button:hover { border-color:var(--accent); }
+    .button.primary:hover { background:#ffd18a; }
+    .micro { font-size:12px; color:var(--muted); margin-top:18px; }
+    .preview { border:1px solid #454039; border-radius:12px; background:linear-gradient(145deg,#22252a,#17191c); box-shadow:0 28px 80px #0005; overflow:hidden; transform:rotate(1deg); }
+    .preview-top { padding:17px 22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; font-size:12px; color:var(--muted); }
+    .status { color:var(--accent); }
+    .preview-body { padding:26px; }
+    .preview h2 { font-size:23px; letter-spacing:-.03em; margin:7px 0 4px; }
+    .preview p { font-size:13px; color:var(--muted); margin:0 0 22px; }
+    .mod { display:flex; align-items:center; gap:14px; padding:17px 0; border-top:1px solid var(--line); }
+    .number { color:var(--accent); background:#f2bc6110; border:1px solid #f2bc6130; border-radius:5px; padding:4px 9px; font:13px ui-monospace,monospace; }
+    .mod strong { display:block; font-size:14px; }
+    .mod small { color:var(--muted); font-size:12px; }
+    .preview-note { margin-top:12px; padding:12px; background:#101214; border-radius:5px; font:12px/1.7 ui-monospace,monospace; color:var(--muted); }
+    .strip { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; padding:23px 0; border-block:1px solid var(--line); color:var(--muted); font-size:13px; }
+    .strip span::before { content:"+"; color:var(--accent); margin-right:10px; }
+    section.content { padding:76px 0; border-bottom:1px solid var(--line); }
+    h2 { font-size:clamp(28px,3.5vw,40px); line-height:1.2; letter-spacing:-.035em; margin:12px 0 18px; }
+    .intro { max-width:650px; color:var(--muted); margin-bottom:32px; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+    .card { padding:27px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+    .card .index { font:12px ui-monospace,monospace; color:var(--accent); }
+    h3 { font-size:18px; line-height:1.4; margin:18px 0 10px; }
+    .card p { margin:0; font-size:14px; color:var(--muted); }
+    .split { display:grid; grid-template-columns:1fr 1fr; gap:70px; }
+    .goals { list-style:none; padding:0; margin:0; }
+    .goals li { padding:17px 0; border-bottom:1px solid var(--line); color:var(--muted); font-size:14px; }
+    .goals li:first-child { padding-top:0; }
+    .goals strong { display:block; color:var(--text); font-size:16px; margin-bottom:3px; }
+    .steps { padding-left:24px; margin-top:28px; }
+    .steps li { padding-left:9px; margin-bottom:20px; color:var(--muted); font-size:15px; }
+    .steps li::marker { color:var(--accent); font-weight:700; }
+    .steps strong { color:var(--text); }
+    .requirements { align-self:start; padding:30px; background:var(--panel); border:1px solid var(--line); border-radius:8px; }
+    .requirements h3 { margin-top:0; }
+    .requirements ul { padding-left:20px; color:var(--muted); font-size:14px; }
+    .requirements p { color:var(--muted); font-size:14px; }
+    code { font-family:ui-monospace,Consolas,monospace; font-size:.88em; color:#f4d59f; overflow-wrap:anywhere; }
+    details { padding:21px 0; border-bottom:1px solid var(--line); }
+    summary { cursor:pointer; font-weight:600; }
+    details p { max-width:820px; color:var(--muted); font-size:15px; }
+    footer { padding:30px 0 40px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+    footer p { margin:0; }
+    footer a { margin-left:18px; }
+    @media(max-width:850px) { .hero { gap:35px; padding:60px 0; } .grid { grid-template-columns:repeat(2,1fr); } .split { gap:35px; } }
+    @media(max-width:650px) { .wrap { width:calc(100% - 36px); } .nav { align-items:flex-start; flex-direction:column; gap:16px; } nav { gap:20px; } .hero,.split { grid-template-columns:1fr; } .hero { padding:48px 0; } .preview { transform:none; } .grid { grid-template-columns:1fr; } section.content { padding:48px 0; } .strip { gap:12px; } footer a { margin:0 18px 0 0; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#"><img src="assets/empire-mod-manager.png" alt="" width="38" height="38">EMPIRE MOD MANAGER</a>
+      <nav aria-label="Main navigation"><a href="#features">Features</a><a href="#goals">The mission</a><a href="#start">Get started</a><a href="README.md">Documentation</a></nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div>
+        <div class="eyebrow">For Empire at War &amp; Forces of Corruption</div>
+        <h1 id="hero-title">Your mods.<br>Your order.<br><span>Your campaign.</span></h1>
+        <p class="lead">Spend less time managing launch arguments and more time in the galaxy. Bring your installed mods together, save your favorite setups, and launch with a preset.</p>
+        <div class="actions"><a class="button primary" href="#start">Get started <span aria-hidden="true">&nbsp;↗</span></a><a class="button" href="#features">Explore the features</a></div>
+        <p class="micro">Windows x64 · Portable application · Local + Steam Workshop mods</p>
+      </div>
+      <aside class="preview" aria-label="Illustrative preset example, not an application screenshot">
+        <div class="preview-top"><span>PRESET CONCEPT</span><span class="status">FORCES OF CORRUPTION</span></div>
+        <div class="preview-body">
+          <div class="eyebrow">One setup. Ready for next time.</div>
+          <h2>My next campaign</h2>
+          <p>An example of an ordered mod preset.</p>
+          <div class="mod"><span class="number">01</span><div><strong>Compatibility patch</strong><small>For this mod combination</small></div></div>
+          <div class="mod"><span class="number">02</span><div><strong>Supported submod</strong><small>Your preferred additions</small></div></div>
+          <div class="mod"><span class="number">03</span><div><strong>Main mod</strong><small>The foundation of your campaign</small></div></div>
+          <div class="preview-note">Save the preset. Return to it later.<br>Always follow the mod authors’ load order.</div>
+        </div>
+      </aside>
+    </section>
+    <div class="strip"><span>Named presets</span><span>Visible launch order</span><span>Searchable mod library</span><span>Settings stored locally</span></div>
+    <section class="content" id="features">
+      <div class="eyebrow">Your library, under control</div>
+      <h2>A home for every setup.</h2>
+      <p class="intro">Manage installed mods for both game editions in one place, with the details and launch controls you need close at hand.</p>
+      <div class="grid">
+        <article class="card"><span class="index">01 / DISCOVER</span><h3>Bring your mods together</h3><p>Find installed local and Steam Workshop mods, with configurable game and Workshop folders.</p></article>
+        <article class="card"><span class="index">02 / SAVE</span><h3>Switch between presets</h3><p>Create, duplicate, and rename ordered setups. Each preset remembers its mods and game edition.</p></article>
+        <article class="card"><span class="index">03 / LAUNCH</span><h3>See what you’re launching</h3><p>Arrange your load order, preview or copy launch arguments, and launch your selected preset.</p></article>
+        <article class="card"><span class="index">04 / ORGANIZE</span><h3>Make the library yours</h3><p>Search, create categories, and drag mods into place. Customize names, versions, types, and visible columns.</p></article>
+        <article class="card"><span class="index">05 / INSPECT</span><h3>Keep useful details close</h3><p>See installed sizes and Workshop titles and update dates. Cached Workshop information remains available offline.</p></article>
+        <article class="card"><span class="index">06 / KEEP</span><h3>Take your settings with you</h3><p>Presets and preferences live in a data folder beside the app. Back it up when moving or updating your installation.</p></article>
+      </div>
+    </section>
+    <section class="content split" id="goals">
+      <div><div class="eyebrow">The mission</div><h2>Less setup.<br>More time playing.</h2><p class="intro">Switching between a main mod, its submods, and patches can mean rebuilding launch arguments every time. This project gives each setup a name and a place to save it.</p><p class="intro">The goal is a practical, portable manager that makes your library easier to understand and your favorite setups easier to revisit.</p></div>
+      <ul class="goals">
+        <li><strong>Simplify the routine</strong>Reduce repeated setup with reusable presets and clear launch controls.</li>
+        <li><strong>Make the order clear</strong>Keep mod order visible and let players follow each author’s instructions.</li>
+        <li><strong>Keep players in control</strong>Customize your library while keeping installed mod files untouched.</li>
+        <li><strong>Explain problems</strong>Report missing mods and scan issues so players can see what needs attention.</li>
+        <li><strong>Stay portable</strong>Keep preferences locally, with no installer required for the packaged release.</li>
+      </ul>
+    </section>
+    <section class="content split" id="start">
+      <div><div class="eyebrow">Your first launch</div><h2>From library to campaign.</h2><p class="intro">Start with the packaged Windows x64 release ZIP. Extract all files into a writable folder and keep them together.</p>
+        <ol class="steps">
+          <li><strong>Open the manager.</strong> Run <code>EmpireModManager.exe</code> from the extracted folder.</li>
+          <li><strong>Check your folders.</strong> Use <strong>Folders</strong> to confirm your game installation and Workshop locations.</li>
+          <li><strong>Create a preset.</strong> Choose Empire at War or Forces of Corruption, then add your installed mods.</li>
+          <li><strong>Arrange and launch.</strong> Follow the authors’ load order, then choose <strong>Save &amp; launch preset</strong>.</li>
+        </ol>
+        <div class="actions"><a class="button primary" href="README.md">Read the full guide</a><a class="button" href="RELEASE-NOTES.md">Release notes</a></div>
+      </div>
+      <aside class="requirements"><h3>Before you begin</h3><ul><li>A Windows x64 PC.</li><li>An installed copy of the game and the expansion your preset requires.</li><li>Installed mods for your chosen setup.</li><li>Steam running when launching the Steam edition.</li></ul><p>The release package includes the .NET runtime. Internet access is needed to refresh Workshop metadata; local discovery and cached details work offline.</p><p>The game and mods are not included. An empty preset launches the unmodded game.</p></aside>
+    </section>
+    <section class="content" id="questions">
+      <div class="eyebrow">Good to know</div><h2>A few details before launch.</h2>
+      <details><summary>Does the manager download or update mods?</summary><p>It manages mods already installed on your PC. Steam handles Workshop subscriptions and updates. Install local mods using their authors’ instructions, then rescan your library.</p></details>
+      <details><summary>Can I combine any mods in a preset?</summary><p>Compatibility depends on the mods. The manager does not merge mod files or automatically resolve dependencies. Use combinations and launch orders supported by the mod authors. A valid launch command does not guarantee that every mod loaded correctly in game.</p></details>
+      <details><summary>Where are my presets and settings saved?</summary><p>They are stored in the <code>data</code> folder beside the executable. Back up that folder before updating or moving the app. Presets do not provide separate game saves or game-settings profiles.</p></details>
+      <details><summary>Can I build the project from source?</summary><p>Yes. The application uses C#, .NET 9, and Windows Forms. On Windows with the .NET 9 SDK, run <code>dotnet build -c Release</code>. See the <a href="README.md#development">development guide</a> for packaging and checks.</p></details>
+    </section>
+  </main>
+  <footer class="wrap"><p><strong>Empire Mod Manager</strong><br>A portable companion for your next campaign.</p><div><a href="README.md">Project README</a><a href="RELEASE-NOTES.md">Release notes</a></div></footer>
+</body>
+</html>

@@ -1,0 +1,10 @@
+bin/
+obj/
+dist/
+data/
+test-results/
+.buildhome/
+releases/
+.vs/
+*.user
+*.suo
